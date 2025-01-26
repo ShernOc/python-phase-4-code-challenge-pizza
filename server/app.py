@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from models import db, Restaurant, RestaurantPizza, Pizza
 from flask_migrate import Migrate
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, jsonify
 from flask_restful import Api, Resource
 import os
 
@@ -39,13 +39,12 @@ def get_restaurants():
     
 @app.route('/restaurants/<int:id>', methods= ['GET'])
 def get_one_restaurant(id):
-    rest = Restaurant.query.filter_by(id)
+    rest = Restaurant.query.filter_by(id=id).first()
     if rest:
         return jsonify({
             "id":rest.id, 
            "name":rest.name,
-           "address":rest.address 
-            
+           "address":rest.address    
         })
     else: 
         return jsonify({"error": "Restaurant not found"})
@@ -89,8 +88,8 @@ def restaurant_pizza():
         new_restaurant = RestaurantPizza(price=price,pizza_id=pizza_id,restaurant_id=restaurant_id)
         db.session.add(new_restaurant)
         db.session.commit()
-    return jsonify({"Success":"Restaurant created"})
-            
-       
+        return jsonify({"Success":"Restaurant created"})
+    
+     
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
