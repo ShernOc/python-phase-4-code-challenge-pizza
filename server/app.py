@@ -24,6 +24,21 @@ api = Api(app)
 def index():
     return "<h1>Code challenge</h1>"
 
+@app.route('/restaurants', methods = ['GET'])
+def get_restaurants():
+    restaurant = Restaurant.query.all()
+    restaurant_list= []
+    for rest in restaurant:
+        restaurant_list.append({
+           "id":rest.id, 
+           "name":rest.name,
+           "address":rest.address 
+        })
+        
+        
+        
+        
+
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
