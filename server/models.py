@@ -2,7 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy_serializer import SerializerMixin # type: ignore
 
 metadata = MetaData(
     naming_convention={
@@ -12,7 +12,7 @@ metadata = MetaData(
 
 db = SQLAlchemy(metadata=metadata)
 
-
+#RESTAURANT MODEL 
 class Restaurant(db.Model, SerializerMixin):
     __tablename__ = "restaurants"
 
@@ -72,6 +72,7 @@ class RestaurantPizza(db.Model, SerializerMixin):
     def validates_price(self,key,price):
         if price <1 or price>30:
             return ValueError("Price must be between 1 and 30")
+        return price 
 
     def __repr__(self):
         return f"<RestaurantPizza ${self.price}>"

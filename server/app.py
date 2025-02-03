@@ -2,7 +2,7 @@
 from models import db, Restaurant, RestaurantPizza, Pizza
 from flask_migrate import Migrate
 from flask import Flask, request, make_response, jsonify
-from flask_restful import Api, Resource
+from flask_restful import Api, Resource # type: ignore
 import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -16,7 +16,6 @@ app.json.compact = False
 migrate = Migrate(app, db)
 
 db.init_app(app)
-
 api = Api(app)
 
 
@@ -24,18 +23,22 @@ api = Api(app)
 def index():
     return "<h1>Code challenge</h1>"
 
+# Get the restaurants
 @app.route('/restaurants', methods = ['GET'])
 def get_restaurants():
+    
     restaurant = Restaurant.query.all()
-    restaurant_list= []
-    for rest in restaurant:
-        restaurant_list.append({
+    #created an empty list 
+    restaurant_list= [
+        {
            "id":rest.id, 
            "name":rest.name,
            "address":rest.address 
-        })
-        
-        return jsonify({"Restaurants": restaurant_list})
+        }for rest in restaurant  
+    ]
+    
+    return jsonify({"Restaurants_list": restaurant_list})
+    
     
 @app.route('/restaurants/<int:id>', methods= ['GET'])
 def get_one_restaurant(id):
@@ -49,18 +52,20 @@ def get_one_restaurant(id):
     else: 
         return jsonify({"error": "Restaurant not found"})
     
-@app.route('/restaurant/<int:id>', methods = ['DELETE'])
-def del_restaurant():
-    deletion = Restaurant.query.filter_by(id)
-    if deletion: 
-        db.session.delete(deletion)
+    
+@app.route('/restaurants/<int:id>', methods = ['DELETE'])
+def del_restaurant(id):
+    delete_restaurant = Restaurant.query.get(id)
+    
+    if delete_restaurant: 
+        db.session.delete(delete_restaurant)
         db.session.commit()
-        return jsonify()
+        return jsonify({"Success": "Restaurant was deleted"})
     else: 
         return jsonify({"error": "Restaurant not found"})
     
 #get pizza 
-@app.route('/pizza', methods = ['GET'])
+@app.route('/pizzas', methods = ['GET'])
 def get_pizza():
     pizza = Pizza.query.all()
     pizz_list = []
@@ -72,15 +77,19 @@ def get_pizza():
         })
         return jsonify({"Pizza": pizz_list})
     
+#Post the pizza 
 @app.route('/restaurant_pizzas', methods = ['POST'])
 def restaurant_pizza():
+    # get the pizza
     data = request.get_json()
     price = data['price']
     pizza_id = data['pizza_id']
     restaurant_id= data['restaurant_id']
     
-    check_pizza_id = Pizza.query.get(pizza_id)
-    check_restaurant_id = Restaurant.query.get(restaurant_id)
+    
+    check_pizza_id = Pizza.query.filter_by(id=pizza_id).first()
+    check_restaurant_id = Restaurant.query.filter_by(id=restaurant_id).first()
+
     
     if not check_pizza_id or not check_restaurant_id: 
         return jsonify({"errors": ["validation errors"]})
